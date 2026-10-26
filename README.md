@@ -1,1 +1,2 @@
-# pi-platform
+# PI Platform
+React/Vite interactive payment integrity demo based on the supplied Figma file. All data is fictional; state persists in browser localStorage. Run `npm install && npm run dev` locally. The assistant is simulated, not live AI.
