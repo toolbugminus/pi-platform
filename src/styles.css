@@ -7,3 +7,10 @@
 .button.selected-control{background:#e8edfc;color:#2d47aa;border-color:#aebdea}
 
 .workqueue-toolbar .bill-type-filter{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:12px;color:#5f697c}.workqueue-toolbar .bill-type-filter select{height:36px;min-width:90px;border:1px solid #cfd3db;border-radius:5px;background:#fff;padding:0 9px;font-size:13px;color:#17181d}.selection-toolbar{padding:5px 0}@media(max-width:900px){.workqueue-toolbar{justify-content:flex-start}.workqueue-toolbar .grow{flex-basis:100%;height:0}}
+
+/* Workqueue heading and actions share one row. The chart flows below the row. */
+.queue-header{display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0;margin:0 0 12px}
+.queue-header>h1{margin:0;white-space:nowrap;flex:0 0 auto}
+.queue-header .workqueue-toolbar{flex:1 1 auto;min-width:0;margin:0;justify-content:flex-end;flex-wrap:wrap;gap:7px}
+.queue-header .workqueue-toolbar .grow{min-width:0}
+@media(max-width:980px){.queue-header{flex-wrap:wrap}.queue-header .workqueue-toolbar{flex-basis:100%;justify-content:flex-end}.queue-header .workqueue-toolbar .grow{display:none}}
