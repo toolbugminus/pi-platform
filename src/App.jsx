@@ -25,7 +25,10 @@ const tree=[
   {name:'COB / C&D',items:[
     {name:'Pre Audit',items:[{name:'Selection'},{name:'Open/Case Hits'}]},
     {name:'Audit',items:[
-      {name:'Member Identification'},
+      {name:'Member Identification',items:[
+        {name:'Positive CMS Validation'},
+        {name:'Positive COM Validation'}
+      ]},
       {name:'Selection',items:[
         {name:'Open/Case Hits',items:[
           {name:'Retro Term'},
