@@ -3,13 +3,99 @@ import React,{useEffect,useMemo,useState} from 'react';
 import{Home,Bot,BookOpen,Bell,Eye,Settings,ChevronDown,ChevronRight,PanelLeftClose,PanelLeftOpen,Search,Columns3,ChartNoAxesCombined,MoreVertical,ArrowUpDown,FileText,Plus,X,ArrowLeft,ArrowRight,Send,FileSearch,Download,CheckCircle2}from'lucide-react';
 import{categories,statuses,label,money,seed,matches,cols,initial}from'./data';
 const STORE='pi-platform-state-v1';
-function load(){try{let v=JSON.parse(localStorage.getItem(STORE));return v&&Array.isArray(v.claims)?{...initial(),...v}:initial()}catch{return initial()}}
-const tree=[{name:'COB / C&D',items:[{name:'Pre Audit',items:[{name:'Selection'},{name:'Open/Case Hits'}]},{name:'Audit',items:[{name:'Member Identification'},{name:'Selection',items:[{name:'Open/Case Hits',items:[{name:'Retro Term'},{name:'Dups',items:categories.map((name,i)=>({name,count:[20,3,4,0,0][i]}))},{name:'Contract Compliance'},{name:'Anomaly Detection'}]}]},{name:'Closed',count:12},{name:'Interim Refund',count:18},{name:'Refund',count:35},{name:'Research',count:25},{name:'QA',items:['Quality Assurance','QA Pending','QA Resubmit','QA Research','QA Denied','QA Approved','QA Denied-Closed'].map(name=>({name}))}]},{name:'Submitted'}]},...['Pharmacy','NEMT','DRG Validation','BH','Hospice'].map(name=>({name,items:[{name:'Pre Audit'},{name:'Audit'},{name:'Submitted'}]}))];
+function load(){
+  try{
+    const v=JSON.parse(localStorage.getItem(STORE));
+    if(!v||!Array.isArray(v.claims))return initial();
+    // Migrate the earlier name-based expansion state to unique node paths.
+    if(Array.isArray(v.expanded)&&v.expanded.every(x=>!x.includes(' > '))){
+      const paths=[];
+      const visit=(nodes,parent='')=>nodes.forEach(n=>{
+        const path=parent?parent+' > '+n.name:n.name;
+        if(v.expanded.includes(n.name)&&n.items?.length)paths.push(path);
+        if(n.items)visit(n.items,path);
+      });
+      visit(tree);
+      v.expanded=paths;
+    }
+    return {...initial(),...v};
+  }catch{return initial()}
+}
+const tree=[
+  {name:'COB / C&D',items:[
+    {name:'Pre Audit',items:[{name:'Selection'},{name:'Open/Case Hits'}]},
+    {name:'Audit',items:[
+      {name:'Member Identification'},
+      {name:'Selection',items:[
+        {name:'Open/Case Hits',items:[
+          {name:'Retro Term'},
+          {name:'Dups',items:categories.slice(0,3).map(name=>({name,count:{'Pure Dup':3,'Diff Billed / Diff Paid':20,'Corrected Billing':4}[name]}))},
+          {name:'Contract Compliance'},
+          {name:'Anomaly Detection'}
+        ]},
+        {name:'Closed',count:12},
+        {name:'Interim Refund',count:18},
+        {name:'Refund',count:35},
+        {name:'Research',count:25,items:[{name:'Awaiting - Selection',count:6},{name:'Pending - Selection',count:5}]}
+      ]},
+      {name:'QA',items:[
+        {name:'Quality Assurance',items:[
+          {name:'QA Pending',count:15},{name:'QA Resubmit',count:10},
+          {name:'QA Research',count:16},{name:'QA Denied',count:8},
+          {name:'QA Approved',count:15},{name:'QA Denied-Closed',count:19},
+          {name:'QA Research-Closed',count:20}
+        ]}
+      ]}
+    ]},
+    {name:'Submitted',items:[
+      {name:'Payer',items:[
+        {name:'WIP',items:[
+          {name:'APA',count:15},
+          {name:'DREQ 1 Resubmit',count:5},
+          {name:'DREQ 2 Resubmit',count:8},
+          {name:'Alivia Research Resubmit',count:10},
+          {name:'Selection File',items:[
+            {name:'Research-Selection',count:8},
+            {name:'Rebutted-Selection',count:3},
+            {name:'Authorized-Selection',count:5}
+          ]},
+          {name:'Sign Off',items:[
+            {name:'Awaiting - Sign Off',count:8},
+            {name:'Pending - Sign Off',count:4},
+            {name:'Rebutted - Sign Off',count:4},
+            {name:'Sent - Sign Off',count:6},
+            {name:'Authorized - Sign Off',count:6},
+            {name:'Awaiting - Sign Off 2',count:6},
+            {name:'Pending - Sign Off 2',count:4},
+            {name:'Rebutted - Sign Off 2'}
+          ]}
+        ]},
+        {name:'Denial Mgmt'},
+        {name:'Research'}
+      ]}
+    ]}
+  ]},
+  ...['Pharmacy','NEMT','DRG Validation','BH','Hospice'].map(name=>({name,items:[{name:'Pre Audit'},{name:'Audit'},{name:'Submitted'}]}))
+];
 const tabs=['AI Audit Overview','Claim Review','Supporting Documents','Review History'];
 const groups=['Claim Details','Payment','Member','Provider','DOS','UB-HCFA','DX','Supporting Documents','Case Hits','Related Encounters','DRG'];
 function Btn({children,onClick,Icon,primary=false,disabled=false,active=false}){return <button disabled={disabled} className={'button'+(primary?' primary':'')+(active?' selected-control':'')} onClick={onClick}>{Icon&&<Icon size={15}/>} {children}</button>}
 function Chip({status}){return <span className="chip"><i/>{label(status)}</span>}
-function Nodes({nodes,depth=0,s,change,nav}){return nodes.map((n,i)=>{const expandable=!!n.items?.length,isOpen=s.expanded.includes(n.name);return <React.Fragment key={n.name+i+depth}><div className={'node'+(s.queue===n.name?' active':'')} style={{paddingLeft:4+depth*12}}><button className={'tiny'+(!expandable?' blank':'')} disabled={!expandable} onClick={()=>change({expanded:isOpen?s.expanded.filter(x=>x!==n.name):[...s.expanded,n.name]})}>{expandable?(isOpen?'−':'+'):'·'}</button><button className="node-label" onClick={()=>{if(expandable&&!isOpen)change({expanded:[...s.expanded,n.name]});nav(n.name)}}>{n.name}{n.count?' ('+n.count+')':''}</button></div>{expandable&&isOpen&&<div className="branch"><Nodes nodes={n.items} depth={depth+1} s={s} change={change} nav={nav}/></div>}</React.Fragment>})}
+function Nodes({nodes,depth=0,parentPath='',s,change,nav}){
+  return nodes.map((n,i)=>{
+    const path=parentPath?parentPath+' > '+n.name:n.name;
+    const expandable=!!n.items?.length;
+    const isOpen=s.expanded.includes(path);
+    const toggle=()=>change({expanded:isOpen?s.expanded.filter(x=>x!==path):[...s.expanded,path]});
+    return <React.Fragment key={path+i}>
+      <div className={'node'+(s.queue===n.name?' active':'')} style={{paddingLeft:4+depth*12}}>
+        {expandable?<button type="button" className={'tiny '+(isOpen?'open':'closed')} aria-label={(isOpen?'Collapse ':'Expand ')+n.name} aria-expanded={isOpen} onClick={toggle}>{isOpen?'−':'+'}</button>:<span className="tiny blank" aria-hidden="true"/>}
+        <button type="button" className="node-label" onClick={()=>{if(expandable&&!isOpen)change({expanded:[...s.expanded,path]});nav(n.name)}}>{n.name}{n.count!=null?' ('+n.count+')':''}</button>
+      </div>
+      {expandable&&isOpen&&<div className="branch"><Nodes nodes={n.items} depth={depth+1} parentPath={path} s={s} change={change} nav={nav}/></div>}
+    </React.Fragment>;
+  });
+}
 function Analytics({data,open,toggle}){const providers=['Country Clinic','City Hospital','General Healthcare','Lakeside Health','Other providers'],pc=providers.map((n,i)=>i===4?4:data.filter(c=>c.provider===n).length),types=['Outpatient','Inpatient','Emergency','Other'],tc=types.map(n=>data.filter(c=>c.type===n).length),max=Math.max(16,...pc),tm=Math.max(25,...tc);return <section className="analytics"><button className="collapse" onClick={toggle}>{open?'Collapse':'Expand'} <ChevronDown size={13}/></button>{open&&<div className="charts"><div><h4>Claims by Provider</h4><div className="bars">{providers.map((n,i)=><div className="bar-row" key={n}><span>{n}</span><div className="bar-track"><i className={i===0?'strong':''} style={{width:(pc[i]/max*100)+'%'}}/></div><b>{pc[i]}</b></div>)}</div><div className="axis"><span>0</span><span>{Math.round(max/4)}</span><span>{Math.round(max/2)}</span><span>{Math.round(max*3/4)}</span><span>{max}</span></div><div className="axis-caption">Claim count</div></div><div><h4>Claims by Bill Type</h4><small>Claim count</small><div className="columns">{types.map((n,i)=><div className="column" key={n}><div className="column-space"><b>{tc[i]}</b><i className={i===0?'strong':''} style={{height:(tc[i]/tm*100)+'%'}}/></div><span>{n}</span></div>)}</div></div></div>}</section>}
 function Popup({title,onClose,children,actions}){return <div className="overlay" onMouseDown={e=>e.target===e.currentTarget&&onClose()}><div className="popup" role="dialog" aria-label={title}><header><h3>{title}</h3><button onClick={onClose}><X size={18}/></button></header><section>{children}</section>{actions&&<footer>{actions}</footer>}</div></div>}
 function download(name,text){const u=URL.createObjectURL(new Blob([text],{type:'text/plain'}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
