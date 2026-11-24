@@ -1,3 +1,4 @@
+import {createPortal} from 'react-dom';
 
 import React,{useEffect,useMemo,useState} from 'react';
 import CobWorkspace from './CobWorkspace';
@@ -119,10 +120,24 @@ function Nodes({nodes,depth=0,parentPath='',s,change,nav}){
   });
 }
 function FeedbackValue({value,feedback,onFeedback}){
- const [open,setOpen]=useState(false);
- return <div className={'feedback-value'+(feedback?' feedback-'+feedback:'')} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setOpen(false)}} onKeyDown={e=>{if(e.key==='Escape')setOpen(false)}}>
-   <button type="button" className="feedback-trigger" aria-label={'Review value '+value} aria-expanded={open} onClick={()=>setOpen(v=>!v)}><span>{value}</span>{feedback==='good'?<ThumbsUp size={14}/>:feedback==='bad'?<ThumbsDown size={14}/>:null}</button>
-   {open&&<div className="feedback-options" role="group" aria-label="AI training feedback"><button type="button" title="Good data point" aria-label="Mark good" className="feedback-good-option" onClick={()=>{onFeedback(feedback==='good'?null:'good');setOpen(false)}}><ThumbsUp size={16}/></button><button type="button" title="Bad data point" aria-label="Mark bad" className="feedback-bad-option" onClick={()=>{onFeedback(feedback==='bad'?null:'bad');setOpen(false)}}><ThumbsDown size={16}/></button></div>}
+ const [position,setPosition]=useState(null);
+ const trigger=React.useRef(null), menu=React.useRef(null);
+ const close=()=>setPosition(null);
+ useEffect(()=>{
+   if(!position)return;
+   const outside=e=>{if(!trigger.current?.contains(e.target)&&!menu.current?.contains(e.target))close()};
+   const escape=e=>{if(e.key==='Escape'){close();trigger.current?.focus()}};
+   document.addEventListener('pointerdown',outside);
+   document.addEventListener('keydown',escape);
+   window.addEventListener('resize',close);
+   window.addEventListener('scroll',close,true);
+   return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape);window.removeEventListener('resize',close);window.removeEventListener('scroll',close,true)};
+ },[position]);
+ function toggle(){if(position){close();return}const r=trigger.current.getBoundingClientRect();setPosition({left:Math.max(8,Math.min(window.innerWidth-82,r.right-76)),top:r.top>=48?r.top-40:r.bottom+4})}
+ function choose(rating){onFeedback(feedback===rating?null:rating);close();trigger.current?.focus()}
+ return <div className={'feedback-value'+(feedback?' feedback-'+feedback:'')}>
+   <button ref={trigger} type="button" className="feedback-trigger" aria-label={'Review value '+value} aria-expanded={!!position} onClick={toggle}><span>{value}</span>{feedback==='good'?<ThumbsUp size={14}/>:feedback==='bad'?<ThumbsDown size={14}/>:null}</button>
+   {position&&createPortal(<div ref={menu} className="feedback-options floating-feedback" style={position} role="group" aria-label="AI training feedback"><button autoFocus type="button" title="Good data point" aria-label="Mark good" className="feedback-good-option" onClick={()=>choose('good')}><ThumbsUp size={16}/></button><button type="button" title="Bad data point" aria-label="Mark bad" className="feedback-bad-option" onClick={()=>choose('bad')}><ThumbsDown size={16}/></button></div>,document.body)}
  </div>
 }
 function Analytics({data,open,toggle}){const providers=['Country Clinic','City Hospital','General Healthcare','Lakeside Health','Other providers'],pc=providers.map((n,i)=>i===4?4:data.filter(c=>c.provider===n).length),types=['Outpatient','Inpatient','Emergency','Other'],tc=types.map(n=>data.filter(c=>c.type===n).length),max=Math.max(16,...pc),tm=Math.max(25,...tc);return <section className="analytics"><button className="collapse" onClick={toggle}>{open?'Collapse':'Expand'} <ChevronDown size={13}/></button>{open&&<div className="charts"><div><h4>Claims by Provider</h4><div className="bars">{providers.map((n,i)=><div className="bar-row" key={n}><span>{n}</span><div className="bar-track"><i className={i===0?'strong':''} style={{width:(pc[i]/max*100)+'%'}}/></div><b>{pc[i]}</b></div>)}</div><div className="axis"><span>0</span><span>{Math.round(max/4)}</span><span>{Math.round(max/2)}</span><span>{Math.round(max*3/4)}</span><span>{max}</span></div><div className="axis-caption">Claim count</div></div><div><h4>Claims by Bill Type</h4><small>Claim count</small><div className="columns">{types.map((n,i)=><div className="column" key={n}><div className="column-space"><b>{tc[i]}</b><i className={i===0?'strong':''} style={{height:(tc[i]/tm*100)+'%'}}/></div><span>{n}</span></div>)}</div></div></div>}</section>}
