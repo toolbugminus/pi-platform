@@ -40,3 +40,5 @@
 .charts .columns{border-left:1px solid #a8b2c3;border-bottom:0;position:relative}
 .charts .columns::after{content:"";position:absolute;left:0;right:0;top:135px;border-top:1px solid #a8b2c3;pointer-events:none}
 .charts .columns{background:repeating-linear-gradient(to bottom,#eef0f4 0,#eef0f4 1px,transparent 1px,transparent 33.75px);background-size:100% 135px;background-repeat:no-repeat}
+
+@media(max-width:640px){.charts .bars{--provider-label-width:100px}}
