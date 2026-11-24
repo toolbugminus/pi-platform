@@ -55,3 +55,5 @@
 .compare td:not(:first-child){padding:0;border-left:1px solid #d9dfea}
 .compare .highlight .feedback-value:not(.feedback-good):not(.feedback-bad){background:transparent}
 .compare td{border-bottom:1px solid #d9dfea}
+
+.feedback-options.floating-feedback{position:fixed;right:auto;z-index:1000;padding:4px;gap:4px;box-shadow:0 4px 12px #20273826}.floating-feedback button{width:30px;height:30px}
