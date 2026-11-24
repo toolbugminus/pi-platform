@@ -32,3 +32,11 @@
 .tree .node{flex-shrink:0}
 .tree .tiny{flex-shrink:0}
 .tree .branch:before{content:none}
+
+/* Continuous axes aligned with the analytics plotting areas. */
+.charts .bars{position:relative;--provider-label-width:150px}
+.charts .bars::before{content:"";position:absolute;left:calc(var(--provider-label-width) + 8px);top:0;bottom:0;width:1px;background:#a8b2c3;z-index:1;pointer-events:none}
+.charts .bar-track{border-left:0}
+.charts .columns{border-left:1px solid #a8b2c3;border-bottom:0;position:relative}
+.charts .columns::after{content:"";position:absolute;left:0;right:0;top:135px;border-top:1px solid #a8b2c3;pointer-events:none}
+.charts .columns{background:repeating-linear-gradient(to bottom,#eef0f4 0,#eef0f4 1px,transparent 1px,transparent 33.75px);background-size:100% 135px;background-repeat:no-repeat}
