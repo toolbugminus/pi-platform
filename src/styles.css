@@ -57,3 +57,19 @@
 .compare td{border-bottom:1px solid #d9dfea}
 
 .feedback-options.floating-feedback{position:fixed;right:auto;z-index:1000;padding:4px;gap:4px;box-shadow:0 4px 12px #20273826}.floating-feedback button{width:30px;height:30px}
+
+/* AI investigation assistant: branded header and restrained corner glow. */
+.chat-panel{background:radial-gradient(ellipse 210px 170px at 100% 100%,#e8efff 0%,#f5f8ff 42%,transparent 80%),#fff;border-color:#c4cde1}
+.chat-heading{position:relative;isolation:isolate;background:radial-gradient(ellipse 180px 100px at 100% 0%,#7899ed65 0%,transparent 76%),linear-gradient(115deg,#344ba7,#3953b5);color:#fff;border-bottom:1px solid #3049a3;border-radius:5px 5px 0 0;align-items:center;gap:12px}
+.chat-heading b{color:#fff;font-weight:600}
+.chat-heading small{color:#e1e8ff}
+.chat-heading button{display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px;width:28px;height:28px;padding:0;color:#fff;background:#ffffff1c;border:1px solid #ffffff35;border-radius:4px;font-size:19px;line-height:1;cursor:pointer}
+.chat-heading button:hover{background:#ffffff30}
+.chat-panel.narrow .chat-heading{border-radius:5px;justify-content:center}
+.chat-compose{align-items:center;gap:5px;padding:4px;background:#fff;border-color:#c9d3e9;border-radius:6px}
+.chat-compose input{background:transparent;padding:6px}
+.chat-compose button{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;padding:0;border:0;border-radius:4px;background:#3953b5;color:white;cursor:pointer}
+.chat-compose button:hover{background:#2d449e}
+.chat-compose button:active{background:#243880}
+.chat-compose:focus-within{border-color:#7990d8;box-shadow:0 0 0 2px #3953b512}
+.chat-heading button:focus-visible,.chat-compose button:focus-visible{outline:2px solid #91a7ef;outline-offset:2px}
